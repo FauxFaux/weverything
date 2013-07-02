@@ -54,6 +54,12 @@ def build_with(cmds, opts):
             slurp += line
             if not slurp_count:
                 warnings[current_warn.group('loc')] = (slurp, current_warn)
+                flag = current_warn.group('flag')
+                path = flag.replace('-W', '') + '.weverything'
+                with open(path, 'a') as f:
+                    f.write(slurp
+                            .replace(' [' + flag + ']', '')
+                            .replace('warning', '\033[93mwarning\033[0m'))
             continue
 
         res = warning_re.match(line)
@@ -87,10 +93,5 @@ if __name__ == "__main__":
         if not flag in scores:
             scores[flag] = 0
         scores[flag] += 1
-        with open(flag.replace('-W', '') + '.weverything', 'a') as f:
-            f.write(warn[0]
-                    .replace(' [' + flag + ']', '')
-                    .replace('warning', '\033[93mwarning\033[0m'))
-
     for flag, score in sorted(scores.iteritems(), key=operator.itemgetter(1)):
         print(("%6d: %s") % (score, flag.replace('-W', '-Wno-')))
